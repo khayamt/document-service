@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: document-service
+  config:
+    import: "optional:classpath:application-secrets.yml"
+  datasource:
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+server:
+  port: 9103
+  servlet:
+    context-path: /document-service
+app:
+  storage:
+    azure-connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
+    azure-container-name: documents
