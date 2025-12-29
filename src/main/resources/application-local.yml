@@ -1,0 +1,6 @@
+spring:
+  config:
+    import: "optional:classpath:application-secrets.yml"
+eureka:
+  client:
+    enabled: false

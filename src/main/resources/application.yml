@@ -2,6 +2,7 @@ spring:
   application:
     name: document-service
   config:
+    #import: "optional:classpath:application-secrets.yml"
     import: "optional:file:/app/config/application-secrets.yml"
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -15,12 +16,26 @@ spring:
       max-request-size: 50MB
 server:
   port: 9104
+  forward-headers-strategy: framework
   servlet:
     context-path: /
 app:
   storage:
     azure-connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
     azure-container-name: documents
+
+springdoc:
+  api-docs:
+    # Expose your OpenAPI JSON at /v3/api-docs
+    path: /v3/api-docs
+  swagger-ui:
+    # Expose Swagger UI at /swagger-ui.html
+    path: /swagger-ui
+    # Force Swagger UI to use the correct docs URL
+    url: /v3/api-docs
+    # (Optional) Nice name in the Swagger header
+    display-operation-id: true
+    doc-expansion: none
 
 eureka:
   client:
