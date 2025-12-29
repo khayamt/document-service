@@ -1,5 +1,6 @@
 package za.co.kpolit.document_service.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @Validated
 @CrossOrigin(origins = "*")
@@ -34,6 +36,7 @@ public class DocumentController {
     @PostMapping("/api/upload")
     public ResponseEntity<?> uploadDocument(@RequestParam("file") MultipartFile file,
                                             @RequestParam(value = "ownerId", required = false) UUID ownerId) {
+        log.info("Uploading : {}", file.getName());
         try {
             String blobName = storageService.store(file);
 
