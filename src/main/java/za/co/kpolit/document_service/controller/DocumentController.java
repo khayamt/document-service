@@ -36,7 +36,7 @@ public class DocumentController {
     @PostMapping("/api/upload")
     public ResponseEntity<?> uploadDocument(@RequestParam("file") MultipartFile file,
                                             @RequestParam(value = "ownerId", required = false) UUID ownerId) {
-        log.info("Uploading : {}", file.getName());
+        log.info("Uploading : {} , ownerId: {} ", file.getName(), ownerId);
         try {
             String blobName = storageService.store(file);
 
