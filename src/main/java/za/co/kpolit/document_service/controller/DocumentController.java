@@ -17,6 +17,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
+@RequestMapping("/api")
 @Validated
 @CrossOrigin(origins = "*")
 public class DocumentController {
@@ -33,7 +34,7 @@ public class DocumentController {
         this.processingService = processingService;
     }
 
-    @PostMapping("/api/upload")
+    @PostMapping("/upload")
     public ResponseEntity<?> uploadDocument(@RequestParam("file") MultipartFile file,
                                             @RequestParam(value = "ownerId", required = false) UUID ownerId) {
         log.info("Uploading : {} , ownerId: {} ", file.getName(), ownerId);
@@ -58,7 +59,7 @@ public class DocumentController {
         }
     }
 
-    @GetMapping("/api/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<DocumentResponseDto> getDocument(@PathVariable("id") UUID id) {
         Optional<DocumentEntity> opt = documentRepository.findById(id);
         if (opt.isEmpty()) return ResponseEntity.notFound().build();
@@ -73,7 +74,7 @@ public class DocumentController {
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/api/{id}/status")
+    @GetMapping("/{id}/status")
     public ResponseEntity<String> getStatus(@PathVariable("id") UUID id) {
         return documentRepository.findById(id)
                 .map(d -> ResponseEntity.ok(d.getStatus().name()))

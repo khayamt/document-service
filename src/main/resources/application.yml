@@ -14,9 +14,9 @@ spring:
       max-file-size: 50MB
       max-request-size: 50MB
 server:
-  port: 9101
+  port: 9104
   servlet:
-    context-path: /document-service
+    context-path: /
 app:
   storage:
     azure-connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
