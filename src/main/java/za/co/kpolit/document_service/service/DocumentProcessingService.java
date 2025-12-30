@@ -19,12 +19,12 @@ public class DocumentProcessingService {
     private final DocumentRepository documentRepository;
     private final TextExtractorService extractor;
     private final OpenAiWrapper ai;
-    private final StorageService storageService;
+    private final AzureStorageService storageService;
 
     public DocumentProcessingService(DocumentRepository documentRepository,
                                      TextExtractorService extractor,
                                      OpenAiWrapper ai,
-                                     StorageService storageService) {
+                                     AzureStorageService storageService) {
         this.documentRepository = documentRepository;
         this.extractor = extractor;
         this.ai = ai;

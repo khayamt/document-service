@@ -14,13 +14,25 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
 server:
   port: 9104
   forward-headers-strategy: framework
   servlet:
     context-path: /
 app:
+  kafka:
+    topic:
+      document-uploaded: document-uploaded
   storage:
+    type: GCS  # Options: AZURE, GCS
     azure-connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
     azure-container-name: documents
 

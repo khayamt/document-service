@@ -1,14 +1,21 @@
 package za.co.kpolit.document_service.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import za.co.kpolit.document_service.dto.DocumentResponseDto;
+import za.co.kpolit.document_service.enums.StorageType;
+import za.co.kpolit.document_service.kafka.event.DocumentUploadedEvent;
+import za.co.kpolit.document_service.kafka.producer.DocumentEventProducer;
 import za.co.kpolit.document_service.model.DocumentEntity;
 import za.co.kpolit.document_service.repository.DocumentRepository;
 import za.co.kpolit.document_service.service.DocumentProcessingService;
+import za.co.kpolit.document_service.service.AzureStorageService;
+import za.co.kpolit.document_service.service.GcsService;
 import za.co.kpolit.document_service.service.StorageService;
 
 import java.io.IOException;
@@ -21,26 +28,36 @@ import java.util.UUID;
 @Validated
 @CrossOrigin(origins = "*")
 public class DocumentController {
-
-    private final StorageService storageService;
     private final DocumentRepository documentRepository;
     private final DocumentProcessingService processingService;
+    private final StorageService storageService;
+    private final DocumentEventProducer eventProducer;
 
-    public DocumentController(StorageService storageService,
-                              DocumentRepository documentRepository,
-                              DocumentProcessingService processingService) {
-        this.storageService = storageService;
+    public DocumentController(DocumentRepository documentRepository,
+                              DocumentProcessingService processingService,
+                              @Value("${app.storage.type:AZURE}") String  storageType,
+                              @Autowired(required = false) java.util.Map<String, StorageService> storageServices,
+                              DocumentEventProducer eventProducer) {
+        this.eventProducer = eventProducer;
         this.documentRepository = documentRepository;
         this.processingService = processingService;
+        // Pick the correct storage service based on app.storage.type
+        this.storageService = storageServices.get(storageType.toUpperCase());
+        if (this.storageService == null) {
+            throw new IllegalArgumentException("No storage service found for type: " + storageType);
+        }
+
+        log.info("Using storage service: {}", storageType);
     }
 
     @PostMapping("/upload")
     public ResponseEntity<?> uploadDocument(@RequestParam("file") MultipartFile file,
                                             @RequestParam(value = "ownerId", required = false) UUID ownerId) {
+        // blobName;
         log.info("Uploading : {} , ownerId: {} ", file.getName(), ownerId);
         try {
-            String blobName = storageService.store(file);
-
+           // if(storageType == StorageType.GCS) {
+            String  blobName = storageService.uploadFile(file);
             DocumentEntity doc = new DocumentEntity();
             doc.setOriginalFileName(file.getOriginalFilename());
             doc.setMimeType(file.getContentType());
@@ -51,7 +68,17 @@ public class DocumentController {
             documentRepository.save(doc);
 
             // process async
-            processingService.processAsync(doc.getId());
+            //processingService.processAsync(doc.getId());
+            // 🔥 Publish Kafka event
+            eventProducer.publishDocumentUploaded(
+                    new DocumentUploadedEvent(
+                            doc.getId(),
+                            blobName,
+                            ownerId,
+                            file.getContentType(),
+                            java.time.Instant.now()
+                    )
+            );
 
             return ResponseEntity.ok(doc.getId());
         } catch (IOException e) {
