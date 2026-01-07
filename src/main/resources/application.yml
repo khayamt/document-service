@@ -32,7 +32,7 @@ app:
     topic:
       document-uploaded: document-uploaded
   storage:
-    type: GCS  # Options: AZURE, GCS
+    type: AWS  # Options: AZURE, GCS
     azure-connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
     azure-container-name: documents
 
