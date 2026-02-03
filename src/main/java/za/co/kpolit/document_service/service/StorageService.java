@@ -5,4 +5,5 @@ import java.io.IOException;
 
 public interface StorageService {
     String uploadFile(MultipartFile file) throws IOException;
+    String readText(String key);
 }

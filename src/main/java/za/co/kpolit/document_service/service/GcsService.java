@@ -7,10 +7,12 @@ import com.google.cloud.WriteChannel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 @Service("GCS")
 public class GcsService implements StorageService {
@@ -43,5 +45,9 @@ public class GcsService implements StorageService {
     public byte[] downloadFile(String blobName) throws IOException {
         BlobId blobId = BlobId.of(bucketName, blobName);
         return storage.readAllBytes(blobId);
+    }
+    @Override
+    public String readText(String key) {
+        return "TOBEIMPLEMENTED";
     }
 }

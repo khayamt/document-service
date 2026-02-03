@@ -4,9 +4,12 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record DocumentUploadedEvent(
+        int version,
         UUID documentId,
         String blobName,
         UUID ownerId,
         String mimeType,
-        Instant uploadedAt
+        Instant uploadedAt,
+        String extractedTextLocation,   // e.g. s3://bucket/docs/uuid.txt
+        long extractedTextSize
 ) {}

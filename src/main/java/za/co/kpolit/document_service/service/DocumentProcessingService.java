@@ -2,6 +2,7 @@ package za.co.kpolit.document_service.service;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import za.co.kpolit.document_service.dto.TextExtractionResult;
 import za.co.kpolit.document_service.model.DocumentEntity;
 import za.co.kpolit.document_service.model.DocumentEntity.Status;
 import za.co.kpolit.document_service.repository.DocumentRepository;
@@ -17,12 +18,12 @@ public class DocumentProcessingService {
     private static final Logger logger = LoggerFactory.getLogger(DocumentProcessingService.class);
 
     private final DocumentRepository documentRepository;
-    private final TextExtractorService extractor;
+    private final TextExtractionService extractor;
     private final OpenAiWrapper ai;
     private final AzureStorageService storageService;
 
     public DocumentProcessingService(DocumentRepository documentRepository,
-                                     TextExtractorService extractor,
+                                     TextExtractionService extractor,
                                      OpenAiWrapper ai,
                                      AzureStorageService storageService) {
         this.documentRepository = documentRepository;
@@ -43,29 +44,29 @@ public class DocumentProcessingService {
             logger.info("Extracting text...: ");
 
             // extract text
-            String text = extractor.extractTextFromBlob(doc.getBlobName());
+            TextExtractionResult textExtractionResult = extractor.extractText(doc.getBlobName());
 
 
-            logger.info("Extracted text: " + text);
+            logger.info("Extracted text: " + textExtractionResult.getExtractedTextLocation());
             logger.info("getStoragePath: " + doc.getBlobName());
 
             logger.info("AI Processing Summary +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             // consider chunking for large text (omitted here)
-            String summary = ai.summarize(text);
+            String summary = ai.summarize(textExtractionResult.getExtractedTextLocation());
             logger.info("Summary: " + summary);
 
             logger.info("AI Processing Quiz +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-            String quizJson = ai.generateQuiz(text, 5);
+            String quizJson = ai.generateQuiz(textExtractionResult.getExtractedTextLocation(), 5);
             logger.info("quizJson: " + quizJson);
 
             logger.info("AI Processing  Test +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-            String testJson = ai.generateTest(text, 10);
+            String testJson = ai.generateTest(textExtractionResult.getExtractedTextLocation(), 10);
             logger.info("testJson: " + testJson);
 
 
 
-            doc.setSummary(summary);
-            doc.setQuizJson(quizJson);
+            doc.setShortSummary(summary);
+            //doc.setQuiz(quizJson);
             doc.setTestJson(testJson);
             doc.setStatus(Status.PROCESSED);
             documentRepository.save(doc);

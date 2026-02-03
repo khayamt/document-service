@@ -62,4 +62,9 @@ public class AzureStorageService implements StorageService {
        // return blobClient.getBlobUrl();
         return blobName;
     }
+    
+    @Override
+    public String readText(String key) {
+        return "TOBEIMPLEMENTED";
+    }
 }
